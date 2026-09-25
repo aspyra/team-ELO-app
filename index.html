@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <style>
+        body {
+            padding-top: 5vh;
+            margin: 0;
+            padding-bottom: 25vh;
+            font-family: system-ui;
+            background-color: #F0F0F0;
+            color: black;
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #E0E0E0;
+            color: black;
+            padding-bottom: 3vh;
+        }
+        .cols-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+        .cols-5 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr 1fr 1fr;
+        }
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            
+        }
+        .background-ball {
+        position: fixed;
+        font-size: 100vh;
+        left: -10vh;
+        bottom: -30vh;
+        opacity: 0.2;
+
+        pointer-events: none;
+        user-select: none;
+
+        z-index: -1;
+        }
+        .logo {
+            font-size: 10em;
+            text-align: center;
+        }
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .button {/*All buttons should take 45% of screen width and have 1:4 aspect ratio*/
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            width: min(45vw, 2500px);
+            aspect-ratio: 3 / 1;
+            font-size: 3.5em;
+            margin: 1vw;
+            border: 3px solid #A0A0A0;
+            border-radius: 1.5vw;
+        }
+        .bordered {
+            border: 3px solid #A0A0A0;
+            border-radius: 1.5vw;
+        }
+        .inactive {
+            background-color: #9A9A9A;
+            color: #6A6A6A;
+        }
+        .team0 {
+            background-color: #E0E0FF;
+        }
+        .team1 {
+            background-color: #FFFFE0;
+        }
+        .back {
+            background-color: #FFE0E0;
+        }
+        .next {
+            background-color: #E0FFE0;
+        }
+        .info {
+            font-size: 4em;
+            flex: 1;
+            text-align: center;
+            margin: 2vw;
+        }
+    </style>
+</head>
+
+<body>
+    <!--SHARED BACKGROUND-->
+    <div class="background-ball">🏐</div>
+
+    <!--MAIN SCREEN-->
+    <section id="main-menu">
+        <main class="center">
+            <div class="logo">🏐<br><strong>ELO</strong>SZKI<br><br></div>
+            <div class="buttons">
+                <button class="button" onclick="initPlayPlayerSelection(); showScreen('play-player-selection')">GRAJ</button>
+                <button class="button" onclick="initPlayerSelection();showScreen('player-selection')">GRACZE</button>
+                <button class="button inactive">MECZE</button>
+                <button class="button inactive">OPCJE</button>
+            </div>
+        </main>
+    </section>
+
+    <!--PLAY - PLAYER SELECTION SCREEN-->
+    <section id="play-player-selection" hidden>
+        <main class="center">
+            <div id="players-selection-list" class="cols-2">
+                <!-- JS SCRIPT POPULATING PLAYER BUTTONS HERE -->
+            </div>
+        </main>
+        <footer class="center">
+            <div class="info"><div>WYBRANI GRACZE: <span id="active-player-count">0</span></div></div>
+            <div class="cols-2">
+                <div class="center">
+                    <button class="button back" onclick="db_save_players(); showScreen('main-menu')">WSTECZ</button>
+                </div>
+                <div class="center">
+                    <button class="button" onclick="db_save_players(); initPlayTeamSelection(); showScreen('play-team-selection')">DALEJ</button>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <!--PLAY - TEAM SELECTION SCREEN-->
+    <section id="play-team-selection" hidden>
+        <main class="center">
+            <!--two separate columns, one for each team, with player buttons inside-->
+            <div class="cols-2">
+                <div class="center">
+                    <div id="team0-selection-list" class="center">
+                        <!-- JS SCRIPT POPULATING TEAM 0 PLAYER BUTTONS HERE -->
+                    </div>
+                </div>
+                <div class="center">
+                    <div id="team1-selection-list" class="center">
+                        <!-- JS SCRIPT POPULATING TEAM 1 PLAYER BUTTONS HERE -->
+                    </div>
+                </div>
+
+        </main>
+        <footer class="center">
+             <div class="cols-2">
+                <div class="center">
+                    <button id="team0-win" class="button" onclick="markWin(0)">WYGRANA</button>
+                </div>
+                <div class="center">
+                    <button id="team1-win" class="button" onclick="markWin(1)">WYGRANA</button>
+                </div>
+            </div>
+            <div class="cols-5">
+                <div class="info"></div>
+                <!--ELO oraz szanse na wygraną drużyny 0-->
+                <div class="info"><!--<span id="team0-elo" class="center">1234</span>--><span id="team0-chance" class="center">50%</span></div>
+                <div class="info bordered"><!--ELO<br>-->SZANSE</div>
+                <!--ELO oraz szanse na wygraną drużyny 1-->
+                <div class="info"><!--<span id="team1-elo" class="center">1234</span>--><span id="team1-chance" class="center">50%</span></div>
+                <div class="info"></div>
+            </div>
+            <div class="cols-2">
+                <div class="center">
+                    <button class="button" onclick="shuffleTeams(false); db_save_players()">LOSUJ</button>
+                </div>
+                <div class="center">
+                    <button class="button" onclick="shuffleTeams(true); db_save_players()">OPTYMALIZUJ</button>
+                </div>
+            </div>
+            <div class="cols-2">
+                <div class="center">
+                    <button class="button back" onclick="initPlayPlayerSelection(); showScreen('play-player-selection')">WSTECZ</button>
+                </div>
+                <div class="center">
+                    <button id="saveButton" class="button inactive" onclick="saveMatchResult()">ZAPISZ</button>
+                </div>
+            </div>
+        </footer>
+    </section>
+    
+    <!--PLAYERS - PLAYER SELECTION SCREEN-->
+    <section id="player-selection" hidden>
+        <main class="center">
+            <div id="players-info-selection-list" class="cols-2">
+                <!-- JS SCRIPT POPULATING PLAYER BUTTONS HERE -->
+            </div>
+        </main>
+        <footer class="center">
+            <div class="cols-2">
+                <div class="center">
+                    <button class="button back" onclick="showScreen('main-menu')">WSTECZ</button>
+                </div>
+                <div class="center">
+                    <button class="button" onclick=";">DODAJ</button>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <!--PLAYERS - PLAYER INFORMATION SCREEN-->
+    <section id="player-info" hidden>
+        <main class="center">
+            <div class = "info" id="info-span"></div>
+        </main>
+        <footer class="center">
+            <div class="cols-2">
+                <div class="center">
+                    <button class="button back" onclick="initPlayerSelection(); showScreen('player-selection')">WSTECZ</button>
+                </div>
+                <div class="center">
+                    <button id="deactivateButton" class="button" onclick="deActivatePlayer()">DEZAKTYWUJ</button>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+</body>
+</html>
+
+<script src="db_logic.js"></script>
+<script src="elo_logic.js"></script>
+
+<script>
+function showScreen(screenId) {
+    document.querySelectorAll("section").forEach(section => {
+        section.hidden = true;
+    });
+    document.getElementById(screenId).hidden = false;
+}
+
+function updateActivePlayerCount() {
+    const activeCount = db_players.filter(player => player.active).length;
+    document.getElementById("active-player-count").textContent = activeCount;
+}
+
+// Populate or re-populate player selection buttons
+function initPlayPlayerSelection(){
+    const playPlayerContainer = document.getElementById("players-selection-list")
+    playPlayerContainer.innerHTML = ""; //clear all contents
+    db_players.forEach((player) => {
+        if(player.hidden == false){
+            //set up player button
+            const button = document.createElement("button");
+            button.classList.add("button")
+            button.classList.add("player")
+            button.textContent = player.name + " " + player.surname
+            if(player.active == false){
+                button.classList.add("inactive")
+            }
+
+            //set up button function
+            button.onclick = () => {
+                player.active = !player.active;
+                button.classList.toggle("inactive")
+                // Update the selected players display in the footer
+                updateActivePlayerCount()
+            }
+
+            playPlayerContainer.appendChild(button)
+        }
+    })
+
+    updateActivePlayerCount(); // Initial count update
+}
+
+function updateTeamsELO(){
+    //create an array of team0, team1 ELOs
+    let team0elo_array = []
+    let team1elo_array = []
+    db_players.forEach((player) => {
+        if(player.active == true && player.hidden == false){
+            if(player.team0 == true){
+                team0elo_array.push(player.elo[0])
+            }
+            else{
+                team1elo_array.push(player.elo[0])
+            }
+        }
+    })
+
+    let team0elo = calculateTeamElo(team0elo_array, team1elo_array)
+    let team1elo = calculateTeamElo(team1elo_array, team0elo_array)
+    let team0chance = calculateTeamChance(team0elo, team1elo, 0)
+    let team1chance = 1 - team0chance
+
+    //document.getElementById("team0-elo").textContent = team0elo
+    //document.getElementById("team1-elo").textContent = team1elo
+    document.getElementById("team0-chance").textContent = (team0chance * 100).toFixed(1) + "%"
+    document.getElementById("team1-chance").textContent = (team1chance * 100).toFixed(1) + "%"
+}
+
+// Populate or re-populate player buttons in team selection screen
+function initPlayTeamSelection(){
+    updateTeamsELO();
+    const playTeam0Container = document.getElementById("team0-selection-list")
+    const playTeam1Container = document.getElementById("team1-selection-list")
+    playTeam0Container.innerHTML = ""; //clear all contents
+    playTeam1Container.innerHTML = ""; //clear all contents
+    
+    db_players.forEach((player) => {
+        if(player.active == true && player.hidden == false){
+            //set up player button
+            const button = document.createElement("button");
+            button.classList.add("button")
+            button.textContent = player.name + " " + player.surname
+
+            //set up button function
+            button.onclick = () => {
+                player.team0 = !player.team0;
+                // Move the button to the other team container
+                if(player.team0 == true){
+                    button.classList.remove("team1")
+                    button.classList.add("team0")
+                    playTeam1Container.removeChild(button)
+                    playTeam0Container.appendChild(button)
+                } else {
+                    button.classList.remove("team0")
+                    button.classList.add("team1")
+                    playTeam0Container.removeChild(button)
+                    playTeam1Container.appendChild(button)
+                }
+                updateTeamsELO()
+            };
+
+            if(player.team0 == true){
+                button.classList.add("team0")
+                playTeam0Container.appendChild(button)
+            } else {
+                button.classList.add("team1")
+                playTeam1Container.appendChild(button)
+            }
+        }
+    })
+}
+
+function markWin(team){
+    if(team == 0 && document.getElementById("team0-win").classList.contains("next") == false){
+        document.getElementById("team0-win").classList.add("next")
+        document.getElementById("team1-win").classList.remove("next")
+        document.getElementById("saveButton").classList.remove("inactive")
+    }
+    else if(team == 1 && document.getElementById("team1-win").classList.contains("next") == false){
+        document.getElementById("team1-win").classList.add("next")
+        document.getElementById("team0-win").classList.remove("next")
+        document.getElementById("saveButton").classList.remove("inactive")
+    }
+    else{
+        document.getElementById("team0-win").classList.remove("next")
+        document.getElementById("team1-win").classList.remove("next")
+        document.getElementById("saveButton").classList.add("inactive")
+    }
+}
+
+function shuffleTeams(optimal){
+    //Get ELO list
+    let elo_array = []
+    db_players.forEach((player) => {
+        if(player.active == true && player.hidden == false){
+            elo_array.push(player.elo[0])
+        }
+    })
+
+    //calculate random/optimal team0
+    let team0_array = []
+    if(optimal == true)
+        team0_array = calculateOptimalTeam(elo_array)
+    else
+        team0_array = calculateRandomTeam(elo_array.length)
+
+    let counter = 0
+    //update team markings
+    db_players.forEach((player) => {
+        if(player.active == true && player.hidden == false){
+            if(team0_array.includes(counter)){
+                player.team0 = true
+            }
+            else{
+                player.team0 = false
+            }
+            counter = counter + 1
+        }
+    })
+    markWin(-1) //reset win marking
+    initPlayTeamSelection()
+}
+
+function saveMatchResult(){
+    let team0_array = []
+    let team1_array = []
+    let team0_ids = []
+    let team1_ids = []
+
+    db_players.forEach((player) => {
+        if(player.active == true && player.hidden == false){
+            if(player.team0 == true){
+                team0_array.push(player.elo[0])
+                team0_ids.push(player.id)
+            }else{
+                team1_array.push(player.elo[0])
+                team1_ids.push(player.id)
+            }
+        }
+    })
+
+    let winner_team = -1
+    if(document.getElementById("team0-win").classList.contains("next") == true)
+        winner_team = 0
+    else if(document.getElementById("team1-win").classList.contains("next") == true)
+        winner_team = 1
+
+    if(winner_team != -1){
+        updateElo(team0_array, team1_array, winner_team) //changes in place
+        for(let i=0; i < team0_ids.length; ++i){
+            let player = db_players.find(p => p.id === team0_ids[i])
+            player.elo.unshift(team0_array[i])
+            if(winner_team == 0)
+                player.wins += 1
+            else
+                player.losses += 1
+        }
+
+        for(let i=0; i < team1_ids.length; ++i){
+            let player = db_players.find(p => p.id === team1_ids[i])
+            player.elo.unshift(team1_array[i])
+            if(winner_team == 1)
+                player.wins += 1
+            else
+                player.losses += 1
+        }
+
+        markWin(-1) //reset win marking
+
+        db_add_match(team0_ids, team1_ids, winner_team)
+
+        db_save_players()
+        db_save_matches()
+        initPlayTeamSelection()
+    }
+}
+
+// Populate or re-populate player selection buttons
+function initPlayerSelection(){
+    const PlayerContainer = document.getElementById("players-info-selection-list")
+    PlayerContainer.innerHTML = ""; //clear all contents
+
+    //sort players by 'hidden', name, then surname (not hidden first, then alphabetical)
+    db_players.sort((a, b) => {
+        if(a.hidden !== b.hidden){
+            return a.hidden - b.hidden;
+        }
+        if(a.name !== b.name){
+            return a.name.localeCompare(b.name);
+        }
+        return a.surname.localeCompare(b.surname);
+    });
+
+    db_players.forEach((player) => {
+        //set up player button
+        const button = document.createElement("button");
+        button.classList.add("button")
+        button.classList.add("player")
+        button.textContent = player.name + " " + player.surname
+        if(player.hidden == true){
+            button.classList.add("inactive")
+        }
+        //set up button function
+        button.onclick = () => {
+            initPlayerInfo(player)
+            showScreen('player-info')
+        }
+        PlayerContainer.appendChild(button)
+    })
+}
+
+let playerInfoId = -1
+
+function initPlayerInfo(player){
+    playerInfoId = player.id
+    let hidden = player.hidden
+    document.getElementById("deactivateButton").textContent = hidden ? "AKTYWUJ" : "DEZAKTYWUJ"
+    let spanButton = document.getElementById("info-span")
+    spanButton.innerHTML = player.name + " " + player.surname + "<br><br>" //TODO: populate with player info
+    spanButton.innerHTML += "ELO: " + player.elo[0] + "<br>"
+    spanButton.innerHTML += "ROZGRANE MECZE: " + (player.wins + player.losses) + "<br>"
+    spanButton.innerHTML += "WYGRANE: " + player.wins + "<br>"
+    spanButton.innerHTML += "PRZEGRANE: " + player.losses + "<br><br>"
+    spanButton.innerHTML += "HISTORIA ELO: <br>" + player.elo.join("<br>") + "<br>"
+}
+
+function deActivatePlayer(){
+    if(playerInfoId != -1){
+        let player = db_players.find(p => p.id === playerInfoId)
+        if(player){
+            player.hidden = !player.hidden
+            db_save_players()
+            initPlayerSelection()
+            showScreen('player-selection')
+        }
+    }
+}
+</script>
