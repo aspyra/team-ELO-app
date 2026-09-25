@@ -4,7 +4,7 @@ let db_matches
 function db_init(){
     db_players = localStorage.getItem(("db_players"))
     if(db_players == null){
-        db_players = [
+        /*db_players = [
         { id: 1, name: "Olek", surname: "Spyra", elo: [1234], wins: 0, losses: 0, active: true, hidden: false, team0: true},
         { id: 2, name: "Natalia", surname: "Spyra", elo: [1000], wins: 1, losses: 3, active: false, hidden: false, team0: false},
         { id: 3, name: "test", surname: "123", elo: [123], wins: 0, losses: 0, active: false, hidden: true, team0: true},
@@ -14,7 +14,8 @@ function db_init(){
         { id: 7, name: "Szymon", surname: "Chyrzyński", elo: [1150], starting_elo: 1200, wins: 2, losses: 1, active: true, hidden: false, team0: false},
         { id: 8, name: "Babka", surname: "Weronika", elo: [1400], starting_elo: 1200, wins: 2, losses: 1, active: true, hidden: false, team0: false},
         { id: 9, name: "Marcin", surname: "Kowalski", elo: [1050], starting_elo: 1200, wins: 2, losses: 4, active: true, hidden: false, team0: false}
-        ]
+        ]*/
+        db_players = [        { id: 1, name: "Test", surname: "Player", elo: [1234], wins: 100, losses: 100, active: false, hidden: true, team0: true}]
         localStorage.setItem("db_players", JSON.stringify(db_players))
     }
     else{
@@ -29,8 +30,6 @@ function db_init(){
     else{
         db_matches = JSON.parse(db_matches)
     }
-    console.log(db_players)
-    console.log(db_matches)
 }
 
 function db_save_players(){
@@ -68,5 +67,5 @@ function db_add_match(team0_ids, team1_ids, winner_team){
     db_save_matches()
 }
 
-//localStorage.clear() //TODO: remove this line, it's just for testing
+//localStorage.clear() //for testing
 db_init()

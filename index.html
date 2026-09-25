@@ -95,6 +95,11 @@
             text-align: center;
             margin: 2vw;
         }
+        .input {
+            width: 80vw;
+            font-size: 1.1em;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -110,7 +115,7 @@
                 <button class="button" onclick="initPlayPlayerSelection(); showScreen('play-player-selection')">GRAJ</button>
                 <button class="button" onclick="initPlayerSelection();showScreen('player-selection')">GRACZE</button>
                 <button class="button inactive">MECZE</button>
-                <button class="button inactive">OPCJE</button>
+                <button class="button inactive" onclick="initOptions(); showScreen('options')">OPCJE</button>
             </div>
         </main>
     </section>
@@ -202,7 +207,7 @@
                     <button class="button back" onclick="showScreen('main-menu')">WSTECZ</button>
                 </div>
                 <div class="center">
-                    <button class="button" onclick=";">DODAJ</button>
+                    <button class="button" onclick="showScreen('player-add')">DODAJ</button>
                 </div>
             </div>
         </footer>
@@ -220,6 +225,49 @@
                 </div>
                 <div class="center">
                     <button id="deactivateButton" class="button" onclick="deActivatePlayer()">DEZAKTYWUJ</button>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <!--PLAYERS - PLAYER ADDING SCREEN-->
+    <section id="player-add" hidden>
+        <main class="center">
+            <div class = "info">
+                <label>IMIĘ:</label> <input class="input" type="text" id="add-name">
+                <br>
+                <label>NAZWISKO:</label> <input class="input" type="text" id="add-surname">
+                <br>
+                <label>POCZĄTKOWE ELO:</label> <input class="input" type="number" id="add-elo" value="1000">
+                <br>
+            </div>
+        </main>
+        <footer class="center">
+            <div class="cols-2">
+                <div class="center">
+                    <button class="button back" onclick="initPlayerSelection(); showScreen('player-selection')">WSTECZ</button>
+                </div>
+                <div class="center">
+                    <button id="saveButton" class="button" onclick="addPlayer(); initPlayerSelection(); showScreen('player-selection')">ZAPISZ</button>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <!--OPTIONS SCREEN-->
+    <section id="options" hidden>
+        <main class="center">
+            <div>
+                <span id="db_text"></span>
+            </div>
+        </main>
+        <footer class="center">
+            <div class="cols-2">
+                <div class="center">
+                    <button class="button back" onclick="showScreen('main-menu')">WSTECZ</button>
+                </div>
+                <div class="center">
+                    <button id="copyButton" class="button" onclick="copy_db()">KOPIUJ</button>
                 </div>
             </div>
         </footer>
@@ -509,4 +557,30 @@ function deActivatePlayer(){
         }
     }
 }
+
+function addPlayer(){
+    let name = document.getElementById("add-name").value.trim()
+    let surname = document.getElementById("add-surname").value.trim()
+    let elo = parseInt(document.getElementById("add-elo").value)
+
+    if(name && surname && !isNaN(elo)){
+        db_add_player(name, surname, elo)
+    }
+}
+
+let dbString = ""
+
+function initOptions(){
+    dbString = "db_players = " + JSON.stringify(db_players, null, 2) + "; db_matches = " + JSON.stringify(db_matches, null, 2) + ";";
+    const dbTextElement = document.getElementById("db_text");
+    dbTextElement.textContent = dbString;
+}
+
+function copy_db(){
+    navigator.clipboard.writeText(dbString).then(() => {
+    }).catch(err => {
+        ;
+    })
+}
+
 </script>
